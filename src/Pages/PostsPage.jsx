@@ -6,6 +6,7 @@ import UserStore from "../Classes/Stores/UserStore";
 import Header from "../Components/General/Header";
 import BlacklistDropdown from "../Components/Posts/BlacklistDropdown";
 import OrderDropdown from "../Components/Posts/OrderDropdown";
+import SourceDropdown from "../Components/Posts/SourceDropdown";
 import Posts from "../Components/Posts/Posts";
 import "./PostsPage.scss";
 
@@ -20,6 +21,7 @@ export default function PostsPage({
 	const [forceUpdateIteration, forceUpdate] = useReducer(x => x + 1, 0);
 	const [pool, setPool] = useState(null);
 	const [order, setOrder] = useState(null);
+	const [source, setSource] = useState(API.source);
 
 	useEffect(() => {
 		if (searchTags.startsWith("pool:")) {
@@ -30,18 +32,23 @@ export default function PostsPage({
 		else setPool(null);
 
 		return () => setPool(null);
-	}, [searchTags]);
+	}, [searchTags, source]);
 
 	return (
 		<div className="PostsPage">
 			<Header searchPlaceholder={searchPlaceholder} />
 
 			<BlacklistDropdown forceUpdate={forceUpdate} />
+			<SourceDropdown onChange={source => {
+				API.setSource(source);
+
+				setSource(source);
+			}} />
 			{prependedTags !== "order:rank" && <OrderDropdown onChange={setOrder} />}
 
 			{pool && (
 				<div className="PoolInfo">
-					<h2 className="Name"><span>{pool.name.split("_").join(" ")}</span> by <a href={`/posts?search=${pool.creator_name}`}>{pool.creator_name}</a></h2>
+					<h2 className="Name"><span>{pool.name.split("_").join(" ")}</span></h2>
 
 					<p className="Description">
 						{pool.description}
@@ -51,7 +58,7 @@ export default function PostsPage({
 
 			{UserStore.getLocalUser() && (
 				<Posts
-					key={prependedTags}
+					key={`${prependedTags}-${source}`}
 					prependedTags={[prependedTags, order].filter(Boolean).join(" ")}
 					emptyPlaceholder={emptyPlaceholder}
 				/>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import * as Feather from "react-feather";
 import { Loader } from "react-feather";
 import API from "../Classes/API";
-import { ActionTypes, getRandomKey, joinClassNames } from "../Classes/Constants";
+import { ActionTypes, download, getRandomKey, joinClassNames } from "../Classes/Constants";
 import { dispatcher } from "../Classes/Dispatcher";
 import { useEventListener, useOnUnmount } from "../Classes/Hooks";
 import QueryManager from "../Classes/QueryManager";
@@ -12,6 +12,13 @@ import LinkWrapper from "./LinkWrapper";
 import "./Modals.scss";
 import Toasts from "./Toasts";
 import Tooltip from "./Tooltip";
+
+/**
+ * Checks if a URL points to a playable video file.
+ * @param url {string} The URL to check.
+ * @returns {boolean}
+ */
+const isVideo = url => /\.(webm|mp4)$/.test(url);
 
 /**
  * Pushes a component to the modal stack.
@@ -56,11 +63,13 @@ function ImageComponent({ image, setLoaded, setFailed, className, onClick, isPre
 
 	const events = {
 		onLoad: e => {
-			e.target.decode().then(() => {
-				setLoaded?.(true);
-				setFailed?.(false);
-				_setLoaded(true);
-			});
+			const done = () => (setLoaded?.(true), setFailed?.(false), _setLoaded(true));
+
+			// HTMLMediaElements (videos) have no decode method.
+			if (typeof e.target.decode !== "function")
+				return done();
+
+			e.target.decode().then(done).catch(done);
 		},
 		onError: () => (setLoaded?.(true), setFailed?.(true), _setLoaded(true)),
 		onClick
@@ -74,7 +83,7 @@ function ImageComponent({ image, setLoaded, setFailed, className, onClick, isPre
 
 	if (!image) return null;
 
-	return /\.webm$/.test(image.full) && !isPreview
+	return isVideo(image.full) && !isPreview
 		? <video
 			ref={ref}
 			src={image.full}
@@ -112,11 +121,13 @@ function ImagePostComponent({ image, setLoaded, setFailed, className, onClick, i
 
 	const events = {
 		onLoad: e => {
-			e.target.decode().then(() => {
-				setLoaded?.(true);
-				setFailed?.(false);
-				_setLoaded(true);
-			});
+			const done = () => (setLoaded?.(true), setFailed?.(false), _setLoaded(true));
+
+			// HTMLMediaElements (videos) have no decode method.
+			if (typeof e.target.decode !== "function")
+				return done();
+
+			e.target.decode().then(done).catch(done);
 		},
 		onError: () => (setLoaded?.(true), setFailed?.(true), _setLoaded(true)),
 		onClick
@@ -148,7 +159,7 @@ function ImagePostComponent({ image, setLoaded, setFailed, className, onClick, i
 
 	if (!image) return null;
 
-	return /\.webm$/.test(image.full) && !isPreview
+	return isVideo(image.full) && !isPreview
 		? <video
 			ref={ref}
 			src={image.full}
@@ -277,15 +288,36 @@ export function ImageModal({ url, getSources, buttons }) {
 	const [failed, setFailed] = React.useState(false);
 
 	// Handle keyboard navigation/controls.
-	useEventListener("keydown", ({ key }) => {
-		switch (key) {
-			case "Escape": return Modals.pop();
-			case "ArrowLeft": case "a": return nav(-1);
-			case "ArrowRight": case "d": return nav(1);
+	useEventListener("keydown", ({ key, shiftKey }) => {
+		// The previous/next images are rendered as preview <img> elements,
+		// so the only <video> in the container is the currently displayed one.
+		const getActiveVideo = () => container.current?.querySelector("video");
+
+		switch (key.toLowerCase()) {
+			case "escape": return Modals.pop();
+			case "arrowleft": case "a": return nav(-1);
+			case "arrowright": return nav(1);
+			case "d":
+				// Shift+D downloads the currently displayed file.
+				if (shiftKey) return download(sources[index].full);
+
+				return nav(1);
 			// This is bad practice. Don't do this.
-			case "ArrowUp": case "w": return window.currentModalEvents?.vote(1);
-			case "ArrowDown": case "s": return window.currentModalEvents?.vote(-1);
+			case "arrowup": case "w": return window.currentModalEvents?.vote(1);
+			case "arrowdown": case "s": return window.currentModalEvents?.vote(-1);
 			case "f": return window.currentModalEvents?.favorite();
+			// Q and E seek the currently displayed video 5 seconds.
+			case "q": case "e": {
+				const video = getActiveVideo();
+
+				if (video) {
+					const seek = key.toLowerCase() === "e" ? 5 : -5;
+
+					video.currentTime = Math.max(0, Math.min(video.duration || 0, video.currentTime + seek));
+				}
+
+				return;
+			}
 		}
 	}, { dependencies: [index] });
 
@@ -485,7 +517,7 @@ export function PostModal({ startPost, posts, buttons }) {
 		if (post.has_notes) {
 			setNotes(true);
 
-			API.request("notes", { "search[post_id]": post.id }).then(notes => notes ? (console.log(notes), setNotes(notes)) : setNotes(null));
+			API.request("notes", { "search[post_id]": post.id }).then(notes => notes ? setNotes(notes) : setNotes(null));
 		}
 		else setNotes(null);
 	}, [index]);
@@ -503,15 +535,36 @@ export function PostModal({ startPost, posts, buttons }) {
 	const [failed, setFailed] = React.useState(false);
 
 	// Handle keyboard navigation/controls.
-	useEventListener("keydown", ({ key }) => {
-		switch (key) {
-			case "Escape": return Modals.pop();
-			case "ArrowLeft": case "a": return nav(-1);
-			case "ArrowRight": case "d": return nav(1);
+	useEventListener("keydown", ({ key, shiftKey }) => {
+		// The previous/next images are rendered as preview <img> elements,
+		// so the only <video> in the container is the currently displayed one.
+		const getActiveVideo = () => container.current?.querySelector("video");
+
+		switch (key.toLowerCase()) {
+			case "escape": return Modals.pop();
+			case "arrowleft": case "a": return nav(-1);
+			case "arrowright": return nav(1);
+			case "d":
+				// Shift+D downloads the currently displayed file.
+				if (shiftKey) return download(sources[index].full);
+
+				return nav(1);
 			// This is bad practice. Don't do this.
-			case "ArrowUp": case "w": return window.currentModalEvents?.vote(1);
-			case "ArrowDown": case "s": return window.currentModalEvents?.vote(-1);
+			case "arrowup": case "w": return window.currentModalEvents?.vote(1);
+			case "arrowdown": case "s": return window.currentModalEvents?.vote(-1);
 			case "f": return window.currentModalEvents?.favorite();
+			// Q and E seek the currently displayed video 5 seconds.
+			case "q": case "e": {
+				const video = getActiveVideo();
+
+				if (video) {
+					const seek = key.toLowerCase() === "e" ? 5 : -5;
+
+					video.currentTime = Math.max(0, Math.min(video.duration || 0, video.currentTime + seek));
+				}
+
+				return;
+			}
 		}
 	}, { dependencies: [index] });
 

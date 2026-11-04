@@ -27,7 +27,8 @@
   .Tooltip {
     background-color: $primaryColor;
 
-    padding: 7px;
+    padding: 7px 10px;
+	padding-bottom: 5px;
 
     white-space: nowrap;
     font-size: 1em;

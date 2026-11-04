@@ -14,7 +14,7 @@ export default class extends React.Component {
 		return (
 			<div>
 				<div className="TabsList">
-					{ this.props.tabs.map(title => (
+					{this.props.tabs.map(title => title && (
 						<span key={title} className={"TabItem" + (title == this.state.active ? " Active" : "")} onClick={() => {
 							this.setState({ active: title });
 
@@ -22,13 +22,13 @@ export default class extends React.Component {
 								this.props.onChange(title, this);
 							}
 						}}>
-							<span className="TabItemTitle">{ title }</span>
+							<span className="TabItemTitle">{title}</span>
 							<div className="TabItemBorder"></div>
 						</span>
-					)) }
+					))}
 				</div>
-					
-				{ children.find(c => c.props.tab == this.state.active) }
+
+				{children.find(c => c.props.tab == this.state.active)}
 			</div>
 		);
 	}

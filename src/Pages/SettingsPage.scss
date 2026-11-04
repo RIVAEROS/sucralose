@@ -5,21 +5,36 @@
 	flex-direction: column;
 	align-items: center;
 
+	padding-bottom: 100px;
+
 	.Section {
 		width: 600px;
 		padding: 20px;
-		margin-bottom: 50px;
+		margin-bottom: 15px;
 
 		background-color: rgba(black, 0.2);
 		backdrop-filter: blur(7px);
-		border-top: 5px solid $primaryColor;
+		border-radius: $secondaryBorderRadius;
+		border: 1.5px solid rgba(white, 0.05);
+
+		&:nth-child(2) {
+			background: none;
+			border: none;
+			backdrop-filter: none;
+			padding-top: 7px !important;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
 
 		.Button {
 			color: $primaryColor;
-			border: 2px solid $primaryColor;
+			border: 1.5px solid rgba(white, 0.05);
+			background: rgba(black, 0.1);
 
 			width: max-content;
-			padding: 5px;
+			padding: 5px 20px;
+			border-radius: 99px;
 
 			cursor: pointer;
 		}
@@ -160,11 +175,13 @@
 			}
 
 			.Tag {
-				background: $primaryColor;
+				background: $tertiaryBG;
 				color: white;
 
-				padding: 2px 6px;
+				padding: 2px 15px;
+				padding-right: 10px;
 				gap: 3px;
+				border-radius: 100px;
 
 				> .LinkWrapper {
 					cursor: pointer !important;
@@ -181,9 +198,11 @@
 					height: 20px;
 
 					cursor: pointer;
+					border-radius: 100px;
 
 					&:hover {
 						background: rgba(black, 0.2);
+						color: var(--red);
 					}
 				}
 			}
@@ -192,11 +211,12 @@
 				border: none;
 				outline: none;
 
-				background: rgba(black, 0.2);
+				background: $secondaryBG;
 				color: var(--txt-color);
 
-				padding: 2px 6px;
+				padding: 6px 12px;
 				width: 120px;
+				border-radius: 99px;
 
 				&::placeholder {
 					color: var(--txt-color);

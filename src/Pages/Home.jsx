@@ -11,6 +11,7 @@ import TutorialModal from "../Components/Modals/TutorialModal";
 import SwitchItem from "../Components/SwitchItem";
 import Tooltip from "../Components/Tooltip";
 import "./Home.scss";
+import { Map } from "react-feather";
 import { NewsModal, newsPosts } from "./NewsPosts";
 
 export const NavigationButtons = {
@@ -141,10 +142,12 @@ export default function Home() {
 				</div>
 			</div>
 
-			<a className="Trello FlexCenter" href="https://trello.com/b/27bqbHA1/roadmap">
-				<Trello />
-				Roadmap
-			</a>
+			<div className="RMContainer">
+				<a className="RM FlexCenter" href="https://sucralose.notion.site/da45f1f3bf944324862f4902ecbdf6f2?v=e394298e4a20471383e8438d1b23854a&pvs=4">
+					<Map />
+					Roadmap
+				</a>
+			</div>
 		</div>
 	);
 }

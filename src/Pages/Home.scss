@@ -30,7 +30,7 @@
 	}
 
 	.ButtonsContainer {
-		width: 500px;
+		width: 400px;
 		margin-top: 50px;
 
 		display: flex;
@@ -44,7 +44,8 @@
 			align-items: center;
 
 			margin-bottom: 7px;
-			padding: 7px;
+			padding: 7px 12px;
+			border-radius: $secondaryBorderRadius;
 
 			svg {
 				margin-right: 7px;
@@ -95,12 +96,18 @@
 		}
 	}
 
-	.Trello {
+	.RMContainer {
+		margin-top: 6vh;
+		padding-bottom: 6vh;
+	}
+
+	.RM {
 		padding: 10px;
-		gap: 5px;
+		gap: 10px;
 
 		cursor: pointer;
 		transition: background-color $ft, backdrop-filter $ft;
+		border-radius: $secondaryBorderRadius;
 
 		&:hover {
 			background-color: rgba(black, 0.2);

@@ -42,20 +42,48 @@ export function openFileDialog(options = {}) {
 	});
 }
 
-export function download(uri) {
-	return fetch("https://cors-proxy.htmldriven.com/?url=" + encodeURIComponent(uri))
-		.then(res => res.blob())
-		.then(blob => {
-			const a = Object.assign(document.createElement("a"), {
-				style: { display: "none" },
-				href: URL.createObjectURL(blob),
-				download: uri.split("/")[uri.split("/").length - 1]
-			});
+export async function download(uri, filename = null) {
+	filename ??= uri.split("/")[uri.split("/").length - 1];
 
-			a.click();
-			window.URL.revokeObjectURL(a.href);
-		})
-		.catch(err => (console.error(err), import("../Components/Toasts").then(Toasts => Toasts.showToast("Failed to save image!", "Failure"))));
+	// Toasts.showToast is a static on the module's default export, not the module namespace.
+	const showToast = (...args) =>
+		import("../Components/Toasts").then(Toasts => Toasts.default.showToast(...args));
+
+	const saveBlob = blob => {
+		const a = Object.assign(document.createElement("a"), {
+			style: { display: "none" },
+			href: URL.createObjectURL(blob),
+			download: filename
+		});
+
+		document.body.appendChild(a);
+		a.click();
+		window.URL.revokeObjectURL(a.href);
+		a.remove();
+	};
+
+	// Browser-side, cross-origin files can only be blob-fetched if the server permits it via CORS.
+	// e621's CDN hard-codes its CORS header to e621.net, so if the direct fetch fails,
+	// the file is opened in a new tab where the browser's native save (Ctrl+S) works.
+	try {
+		const response = await fetch(uri);
+
+		if (!response.ok)
+			throw new Error(`Request failed with status ${response.status}`);
+
+		saveBlob(await response.blob());
+
+		showToast(`${filename} downloaded!`, "Success");
+	}
+	catch (err) {
+		console.error(err);
+
+		// Trigger the browser's native download dialog for cross-origin files.
+		// The download attribute is ignored cross-origin, so the user must save manually.
+		window.open(uri, "_blank");
+
+		showToast("This file can't be downloaded directly, so it's been opened in a new tab - please save it from there.", "Warning", 10);
+	}
 }
 
 export function getRandomKey() { return Math.random().toString(36).substr(7); }

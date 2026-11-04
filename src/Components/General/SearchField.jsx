@@ -3,6 +3,7 @@ import React from "react";
 import * as Feather from "react-feather";
 import API from "../../Classes/API";
 import { ActionTypes, joinClassNames, openFileDialog } from "../../Classes/Constants";
+import { copyToClipboard } from "../Modals";
 import { dispatcher } from "../../Classes/Dispatcher";
 import QueryManager from "../../Classes/QueryManager";
 import RoutesStore from "../../Classes/Stores/RoutesStore";
@@ -22,6 +23,53 @@ export const TagTypes = {
 	7: { icon: <Feather.AlignCenter />, tooltip: "Meta" },
 	8: { icon: <Feather.BookOpen />, tooltip: "Lore" }
 };
+
+/**
+ * Finds the bounds of the tag (whitespace-delimited word) at the cursor's position.
+ * @param value {string} The input's text content.
+ * @param cursor {number} The cursor's index in the string.
+ * @returns {[number, number]} The [start, end] indices of the tag.
+ */
+function getTagBounds(value, cursor) {
+	// Clamp the cursor into the string, so clicking before/after text works.
+	cursor = Math.min(Math.max(cursor, 0), value.length);
+
+	// Expand left from the cursor until whitespace or the start of the string.
+	let start = cursor;
+	while (start > 0 && !/\s/.test(value[start - 1]))
+		start--;
+
+	let end = cursor;
+
+	if (end > start) {
+		// The cursor is inside a word - expand right until whitespace or the end.
+		while (end < value.length && !/\s/.test(value[end]))
+			end++;
+	}
+	else {
+		// The cursor is in whitespace - use the tag behind it, if there is one.
+		while (end > start && /\s/.test(value[end - 1]))
+			end--;
+
+		start = end;
+		while (start > 0 && !/\s/.test(value[start - 1]))
+			start--;
+	}
+
+	return [start, end];
+}
+
+/**
+ * Gets the tag (whitespace-delimited word) at the cursor's position.
+ * @param value {string} The input's text content.
+ * @param cursor {number} The cursor's index in the string.
+ * @returns {string} The tag at the cursor.
+ */
+function getTagAtCursor(value, cursor) {
+	const [start, end] = getTagBounds(value, cursor);
+
+	return value.slice(start, end);
+}
 
 export default function SearchField({
 	placeholder = "Search..."
@@ -94,6 +142,22 @@ export default function SearchField({
 		reader.readAsDataURL(file);
 	}
 
+	// Copies the Atom feed URL for the current search to the clipboard.
+	function copyRssFeed() {
+		// e.g. https://e621.net/posts.atom?tags=oviraptor+rating:s&login=user&api_key=...
+		const { login, api_key } = API.loginData;
+		const tags = ref.current.value?.trim();
+
+		const params = { ...(tags ? { tags } : {}) };
+
+		// Authenticate the feed, so subscribed/blacklisted content is included.
+		login && api_key && Object.assign(params, { login, api_key });
+
+		const feedUrl = API.getEndpoint("posts.atom", params, false, { clientParam: false });
+
+		copyToClipboard(feedUrl);
+	}
+
 	SearchField.handleSearch = search;
 
 	// Create the events object.
@@ -101,12 +165,13 @@ export default function SearchField({
 		onFocus: () => setFocused(true),
 		onBlur: () => setFocused(false),
 		onKeyDown: e => e.key === "Enter" && search(),
-		onInput: _.debounce(async e => {
+		// Fetches auto complete entries for the tag at the cursor's position.
+		fetchAutoComplete: async e => {
 			// Get the text content of the input.
-			const { value } = e.target;
+			const { value, selectionStart } = e.target;
 
-			// Get the search string.
-			const search = value.split(/\s/).slice(-1)[0].replace(/[-~*]/g, "");
+			// Get the search string for the tag at the cursor position.
+			const search = getTagAtCursor(value, selectionStart).replace(/[-~*]/g, "");
 			// If the search string is empty, clear the state and return.
 			if (!search.trim()) return setAutoCompleteEntries([]);
 
@@ -127,7 +192,11 @@ export default function SearchField({
 			catch (e) {
 				setAutoCompleteEntries([]);
 			}
-		}, 200),
+		},
+		onInput: _.debounce(async e => events.fetchAutoComplete(e), 200),
+		// Re-fetch auto complete entries when the caret moves to a different tag.
+		onKeyUp: e => ["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key) && events.fetchAutoComplete(e),
+		onClick: e => events.fetchAutoComplete(e),
 		onChange: e => {
 			const { value } = e.currentTarget;
 			setValue(value);
@@ -136,26 +205,27 @@ export default function SearchField({
 
 	// Create auto complete entry click handler.
 	function handleAutoCompleteEntryClick(tag) {
-		// Get all tag entries
-		const tags = ref.current.value.split(/\s/);
+		// Find the bounds of the tag at the cursor's position.
+		const { value, selectionStart } = ref.current;
+		const [start, end] = getTagBounds(value, selectionStart);
+
+		// Replace the tag with the clicked entry, preserving any meta prefixes (-/~).
+		const prefix = (value.slice(start, end).match(/^[-~]+/) ?? [""])[0];
+		const completed = prefix + tag.name;
+		const newValue = value.slice(0, start) + completed + " " + value.slice(end);
+		const cursorPosition = start + completed.length + 1;
+
 		// Set the input text to the clicked tag name.
-		setValue([
-			// Get the text content of the input, excluding the last word.
-			...tags.slice(0, -1),
-			// Append the tag name to the list of tags.
-			(tags[tags.length - 1].match(/[^a-z0-9_]/gi)?.[0] ?? "") + tag.name,
-			// And a little spacey.
-			""
-		].join(" "));
+		setValue(newValue);
 
 		// Clear the auto complete entries.
 		setAutoCompleteEntries([]);
 
 		// Wait for the next frame because JavaScript is shitting through the screen.
 		setTimeout(() => {
-			// Set the selection index to the end of the list.
+			// Set the selection index after the completed tag.
 			ref.current.selectionStart =
-				ref.current.selectionEnd = ref.current.value.length;
+				ref.current.selectionEnd = cursorPosition;
 
 			// Focus the input field element.
 			ref.current.focus();
@@ -172,6 +242,10 @@ export default function SearchField({
 
 			<Feather.Image className="Button" onClick={imageSearch.bind(null, null)} />
 			<Feather.Search className="Button" onClick={search.bind(null, null)} />
+
+			<Feather.Rss className="Button" onClick={copyRssFeed}>
+				<Tooltip>Copy RSS Feed</Tooltip>
+			</Feather.Rss>
 
 			<div className="AutoCompleteContainer">
 				{autoCompleteEntries.map(tag => tag === null
@@ -194,7 +268,7 @@ export default function SearchField({
 									{tag.name} <span style={{ opacity: 0.75 }}>({tag.antecedent_name})</span>
 								</div>
 							) : <span className="Title">{tag.name}</span>}
-							<span className="PostCount">{tag.post_count} posts</span>
+							<span className="PostCount">{Intl.NumberFormat().format(tag.post_count)} posts</span>
 						</div>
 					)
 				)}

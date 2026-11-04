@@ -8,38 +8,23 @@
   padding: 5px;
   position: relative;
   
-  border-bottom: 2px solid var(--txt-color);
+  background: rgba(black, 0.1);
+  border-radius: 100px;
+  border: 1.5px solid rgba(white, 0.05);
   
-  transition: border-color $ft;
+  transition: border-color $ft, background-color $ft;
   
   &.Focused {
     border-color: $primaryColor;
+	background: rgba(black, 0.2);
     
     &, .SearchField, .SearchField::placeholder {
       color: white;
     }
     
-    &:After {
-      right: 0;
-      background-color: $secondaryBG;
-    }
-    
     .AutoCompleteContainer {
       display: block;
     }
-  }
-  
-  &::After {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 100%; bottom: 0;
-    
-    pointer-events: none;
-    z-index: -1;
-    
-    //background-color: white;
-    
-    transition: right $ft, background-color $ft;
   }
   
   .SearchField {
@@ -84,6 +69,19 @@
       
       display: flex;
       align-items: center;
+		border: 1px solid rgba(white, 0.05);
+
+	  &:first-child {
+		border-radius: $secondaryBorderRadius $secondaryBorderRadius 0 0;
+	  }
+
+	  &:not(:first-child) {
+		border-top: 0;
+	  }
+
+	  &:last-child {
+		border-radius: 0 0 $secondaryBorderRadius $secondaryBorderRadius;
+	  }
       
       .IconContainer {
         padding: 5px;

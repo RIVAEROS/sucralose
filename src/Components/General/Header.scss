@@ -37,6 +37,7 @@
       align-items: center;
 
       padding: 7px;
+	  border-radius: $secondaryBorderRadius;
 
       cursor: pointer;
       transition: color $ft, background-color $ft;

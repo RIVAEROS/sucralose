@@ -56,6 +56,7 @@ let lastPageChange = performance.now();
 let hasReachedEnd = false;
 let lastHash = RoutesStore.getFormattedRoute()[0];
 let lastSuccessfulRequest = null;
+let lastSuccessfulRequestSource = null;
 export default function Posts({ prependedTags, emptyPlaceholder = null, request = null, pagingDisabled = false }) {
 	const [posts, setPosts] = React.useState([]);
 	const [isFetching, setFetchingState] = React.useState(true);
@@ -71,8 +72,6 @@ export default function Posts({ prependedTags, emptyPlaceholder = null, request 
 	useEventListener("resize", () => {
 		setColumnCount(Math.round(window.innerWidth / 480));
 	}, { target: window });
-
-	console.log(columnCount);
 
 	dispatcher.useForceUpdater(ActionTypes.UPDATE_LOCAL_USER);
 
@@ -126,7 +125,7 @@ export default function Posts({ prependedTags, emptyPlaceholder = null, request 
 			];
 
 			// I have no clue why this is here, but I am too afraid to touch it.
-			if (_.isEqual(lastSuccessfulRequest, _request) && lastHash === RoutesStore.getFormattedRoute()[0])
+			if (_.isEqual(lastSuccessfulRequest, _request) && lastSuccessfulRequestSource === API.source && lastHash === RoutesStore.getFormattedRoute()[0])
 				return setFetchingState(false);
 
 			const tagChunk = UserStore.getLocalUser()?.e621User?.tagQueryLimit ?? 40;
@@ -209,7 +208,10 @@ export default function Posts({ prependedTags, emptyPlaceholder = null, request 
 
 				hasReachedEnd = true;
 			}
-			else lastSuccessfulRequest = _request;
+			else {
+				lastSuccessfulRequest = _request;
+				lastSuccessfulRequestSource = API.source;
+			}
 
 			const _posts =
 				tags === search && RoutesStore.getFormattedRoute()[0] === hash && !request

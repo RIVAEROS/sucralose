@@ -92,9 +92,9 @@ export default function PostPage({ id }) {
 					)}
 
 					<TabsList tabs={["Comments", "Tags", "Details", post.pools.length > 0 && "Pool"]}>
-						<PostComments id={id} />
+						<PostComments id={id} tab={"Comments"} />
 
-						<div className="TagsList">
+						<div className="TagsList" tab={"Tags"}>
 							{Object.keys(post.tags).filter(tc => post.tags[tc].length).reverse().map(category => (
 								<div className="TagCategory" key={category}>
 									<h2>{category} - {post.tags[category].length}</h2>
@@ -110,7 +110,7 @@ export default function PostPage({ id }) {
 							))}
 						</div>
 
-						<div className="PostDetails Flex">
+						<div className="PostDetails Flex" tab={"Details"}>
 							<div>
 								<div className="Entry">
 									<h2>Post ID</h2>

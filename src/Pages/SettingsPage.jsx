@@ -20,7 +20,7 @@ import ApiKeyHelp2 from "../Help/API Key/2.png";
 import "./SettingsPage.scss";
 
 
-function ApiKeyTutorialModal() {
+function ApiKeyTutorialModal({ source = "e621.net" }) {
 	return (
 		<TutorialModal>
 			<h3>
@@ -43,7 +43,7 @@ function ApiKeyTutorialModal() {
 
 			<p>
 				That being said, you may gain access to your API key by navigating
-				to <a href="https://e621.net/users/home">https://e621.net/users/home</a> and
+				to <a href={`https://${source}/users/home`}>https://{source}/users/home</a> and
 				following the steps below.
 			</p>
 
@@ -75,59 +75,57 @@ function ApiKeyTutorialModal() {
 	)
 }
 
-function ApiKeySection() {
+function ApiKeySection({ source = "e621.net", prefix = "", title = "E621 API Key" }) {
 	const localUser = UserStore.useState(() => UserStore.getLocalUser());
 
 	const events = {
 		saveUsername: ({ target }) => {
-			if (target.value.trim() === localUser?.username) return;
+			if (target.value.trim() === localUser?.[`${prefix}username`]) return;
 
 			if (target.length > 36)
 				return Toasts.showToast("Username is too long", "Failure");
 
 			Database.update(
 				Database.doc("users", localUser.uid),
-				{ username: target.value }
+				{ [`${prefix}username`]: target.value }
 			).then(() => {
 				Toasts.showToast("Username updated", "Success");
 
-				_.merge(localUser, { username: target.value });
+				_.merge(localUser, { [`${prefix}username`]: target.value });
 			});
 		},
 		saveApiKey: ({ target }) => {
-			if (target.value.trim() === localUser?.apiKey) return;
+			if (target.value.trim() === localUser?.[`${prefix}apiKey`]) return;
 
 			if (target.length > 36)
 				return Toasts.showToast("Invalid API key", "Failure");
 
 			Database.update(
 				Database.doc("users", localUser.uid),
-				{ apiKey: target.value }
+				{ [`${prefix}apiKey`]: target.value }
 			).then(() => {
 				Toasts.showToast("API key updated", "Success");
 
-				_.merge(localUser, { apiKey: target.value });
+				_.merge(localUser, { [`${prefix}apiKey`]: target.value });
 			});
 		}
 	}
 
 	return localUser?.signedIn ? (
 		<div className="Section ApiKey">
-			<h1>E621 API Key</h1>
+			<h1>{title}</h1>
 
-			<u onClick={() => Modals.push(<ApiKeyTutorialModal />)}>
-				What's this?
-			</u>
+			<u onClick={() => Modals.push(<ApiKeyTutorialModal source={source} />)}>What's this?</u>
 
 			<div className="FieldContainer">
 				<input className="Field" placeholder="Username"
-					defaultValue={localUser.username}
+					defaultValue={localUser[`${prefix}username`]}
 					onBlur={events.saveUsername} />
 			</div>
 
 			<div className="FieldContainer">
 				<input className="Field Confidential" placeholder="API Key"
-					defaultValue={localUser.apiKey}
+					defaultValue={localUser[`${prefix}apiKey`]}
 					onBlur={events.saveApiKey} />
 			</div>
 		</div>
@@ -265,6 +263,8 @@ export default function SettingsPage() {
 				localUser.settings
 			);
 
+			console.log("huh")
+
 			forceUpdate();
 		}
 	}, [localUser]);
@@ -323,11 +323,12 @@ export default function SettingsPage() {
 				</div>
 			</div>
 
-			<ApiKeySection />
+			<ApiKeySection source="e621.net" title="E621 API Key" />
+			<ApiKeySection source="e6ai.net" prefix="ai" title="E6AI API Key" />
 			<SubscriptionsSection />
 			<BlacklistsSection />
 
-			{Object.entries(Settings.props).map(([categoryName, props]) => (
+			{Object.entries(Settings.defaults).map(([categoryName, props]) => (
 				<div className="Section" key={categoryName}>
 					<h1>{formatCamelCase(categoryName)}</h1>
 
@@ -335,7 +336,7 @@ export default function SettingsPage() {
 						<SettingField
 							key={getRandomKey()}
 							name={name}
-							setting={setting}
+							setting={Settings.props[categoryName][name]}
 							resetValue={Settings.defaults[categoryName][name].value}
 							callback={value =>
 								(Settings.props[categoryName][name].value = value, saveDeBouncer(), updateDeBouncer())}
@@ -356,25 +357,25 @@ export const Settings = new class Settings {
 		accentColors: {
 			primary: {
 				type: "color",
-				value: "#7bb1bd"
+				value: "#ca9ee6"
 			},
 			secondary: {
 				type: "color",
-				value: "#BD7BA2"
+				value: "#81c8be"
 			}
 		},
 		backgroundColors: {
 			primary: {
 				type: "color",
-				value: "#2c3946"
+				value: "#232634"
 			},
 			secondary: {
 				type: "color",
-				value: "#364758"
+				value: "#292c3c"
 			},
 			tertiary: {
 				type: "color",
-				value: "#364758"
+				value: "#303446"
 			}
 		},
 		backgroundImage: {
@@ -426,6 +427,26 @@ export const Settings = new class Settings {
 				min: 1, max: 20,
 				step: 1,
 				value: 20
+			}
+		},
+		performance: {
+			lowQualityPostPreviews: {
+				type: "slider",
+				min: 0, max: 1,
+				step: 1,
+				value: 0
+			},
+			animationsEnabled: {
+				type: "slider",
+				min: 0, max: 1,
+				step: 1,
+				value: 1
+			},
+			disableBlurring: {
+				type: "slider",
+				min: 0, max: 1,
+				step: 1,
+				value: 0
 			}
 		}
 	};
@@ -564,6 +585,19 @@ export function SettingsRenderer() {
 
 	return (
 		<style>
+			{props.performance.animationsEnabled.value < 0.5 && `
+				#root * {
+					transition: none !important;
+					animation-duration: 0ms !important;
+				}
+			`}
+
+			{props.performance.disableBlurring.value > 0.5 && `
+				#root * {
+					backdrop-filter: none !important;
+				}
+			`}
+
 			{`
             
 			:root {

@@ -39,13 +39,17 @@ export default function Post({ post }) {
 	} = post;
 
 	// Get the preview image URL without fail.
-	const previewImage = sample?.url ?? preview?.url ?? file?.url;
+	let previewImage = sample?.url ?? preview?.url ?? file?.url;
+	if (Settings.props.performance.lowQualityPostPreviews.value > 0.5) {
+		previewImage = preview?.url ?? sample?.url ?? file?.url;
+	}
 
 	// Create some states.
 	const [tooltipText, setTooltipText] = React.useState("");
 	const [tooltipSide, setTooltipSide] = React.useState("left");
 	const [busyButtons, setBusyButtons] = React.useState([]);
 	const [previewLoaded, setPreviewLoaded] = React.useState(false);
+	const [hovering, setHovering] = React.useState(false);
 
 	// Create the button component.
 	const Button = React.useMemo(() =>
@@ -129,10 +133,8 @@ export default function Post({ post }) {
 	return previewImage ? (
 		<PostsContext.Consumer>
 			{context => (
-				<div className="Post">
+				<div className={joinClassNames("Post", [hovering, "Hovered"])}>
 					<div className="PostHeader">
-						Artist{tags.artist.length > 1 ? "s" : null}
-						<div className="Divider" />
 						{tags.artist.length
 							? tags.artist.map((artist, i) => (
 								<TagItem key={i}>
@@ -140,8 +142,8 @@ export default function Post({ post }) {
 								</TagItem>
 							))
 							: (
-								<span style={{ opacity: 0.65 }}>
-									unknown
+								<span className="TagItem Unknown">
+									unknown artist
 								</span>
 							)}
 					</div>
@@ -184,7 +186,10 @@ export default function Post({ post }) {
 											buttons={post => <PostModalButtons post={post} />}
 										/>
 									)
-								} />
+								}
+								onMouseOver={() => setHovering(true)}
+								onMouseOut={() => setHovering(false)}
+							/>
 						</ContextMenu.Wrapper>
 					)}
 
@@ -199,35 +204,37 @@ export default function Post({ post }) {
 							"FooterTooltip", [tooltipSide === "right", "RightSide"]
 						)}>{tooltipText}</div>}
 
-						<div className="VotesContainer">
-							<div className="Flex">
-								<Button text={score.up} tooltipText="Upvote"
-									className={score.our_score === 1 ? "Active" : ""}
-									onClick={events.vote.bind(null, 1)}>
-									<Feather.ThumbsUp />
-								</Button>
+						<div className="Sec Left Flex">
+							<div className="VotesContainer">
+								<div className="Flex">
+									<Button text={score.up} tooltipText="Upvote"
+										className={score.our_score === 1 ? "Active" : ""}
+										onClick={events.vote.bind(null, 1)}>
+										<Feather.ThumbsUp />
+									</Button>
 
-								<Button text={-score.down} tooltipText="Downvote"
-									className={score.our_score === -1 ? "Active" : ""}
-									onClick={events.vote.bind(null, -1)}>
-									<Feather.ThumbsDown />
-								</Button>
+									<Button text={-score.down} tooltipText="Downvote"
+										className={score.our_score === -1 ? "Active" : ""}
+										onClick={events.vote.bind(null, -1)}>
+										<Feather.ThumbsDown />
+									</Button>
+								</div>
+
+								<div className="VotesTally">
+									<div className="UpVotes" style={{
+										width: ((score.up / (score.up + -score.down)) * 100) + "%"
+									}} />
+								</div>
 							</div>
 
-							<div className="VotesTally">
-								<div className="UpVotes" style={{
-									width: ((score.up / (score.up + -score.down)) * 100) + "%"
-								}} />
-							</div>
+							<Button text={fav_count} tooltipText="Favorite"
+								className={is_favorited ? "Favorited" : ""}
+								onClick={events.toggleFavorite}>
+								<Feather.Heart />
+							</Button>
 						</div>
 
-						<Button text={fav_count} tooltipText="Favorite"
-							className={is_favorited ? "Favorited" : ""}
-							onClick={events.toggleFavorite}>
-							<Feather.Heart />
-						</Button>
-
-						<div style={{ position: "absolute", right: 5 }} className="Flex">
+						<div style={{ position: "absolute", right: 5 }} className="Sec Right Flex">
 							{pools?.length > 0 && (
 								<ContextMenu.Wrapper menu={<PoolContextMenu pools={pools} />}>
 									<Button
@@ -471,6 +478,7 @@ export function PoolContextMenu({ pools }) {
 			{data.map(pool => (
 				<ContextMenu.Item
 					key={pool.id}
+					onClick={e => location.assign(`/posts?search=pool:${pool.id}`)}
 				>
 					<a href={`/posts?search=pool:${pool.id}`}>
 						<div>

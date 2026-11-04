@@ -1,5 +1,5 @@
-import { onAuthStateChanged } from "@firebase/auth";
-import { serverTimestamp } from "@firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { serverTimestamp } from "firebase/firestore";
 import { getMessaging, getToken } from "firebase/messaging";
 import _ from "lodash";
 import { Modals } from "../../Components/Modals";
@@ -126,6 +126,14 @@ const UserStoreClass = class UserStore extends Store {
 						Settings.props,
 						user.settings
 					);
+
+					if (Settings.props.accentColors.primary.value != Settings.defaults.accentColors.primary.value) {
+						if (!localStorage.getItem("notice.default_look")) {
+							Toasts.showToast("The default theme of the site has been updated. If you wish to experience the new default look, please navigate to Settings, and reset each color setting to default.", "", 15);
+
+							localStorage.setItem("notice.default_look", true);
+						}
+					}
 
 					dispatcher.dispatch({
 						type: ActionTypes.UPDATE_SETTINGS,

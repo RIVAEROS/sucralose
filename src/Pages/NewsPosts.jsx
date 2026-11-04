@@ -123,7 +123,7 @@ export const newsPosts = [{
 					Ads will be added to the site in the near future, <b>but</b>, you will be able to disable them in the settings.<br />
 					This is for those of you who are interested in supporting me, but do not have the funds to do so.<br />
 					Meanwhile, if you do have the funds, you can support me by donating to my Patreon page, which I will be creating soon. :)<br /><br />
-					If you would be interested, please contact me on my Discord or <a href="https://twitter.com/@Metalloriff">Twitter</a> <i>(Psst.. give me a follow, I'm beginning to actively use my Twitter.)</i>, and let me know that I'm not wasting my time.
+					If you would be interested, please contact me on my Discord or <a href="https://twitter.com/@RIVÆROS">Twitter</a> <i>(Psst.. give me a follow, I'm beginning to actively use my Twitter.)</i>, and let me know that I'm not wasting my time.
 				</p>
 			</>
 		);
@@ -164,7 +164,7 @@ export const newsPosts = [{
 				</p>
 
 				<p>
-					However, I have many projects. I work on them in a priority list of what I'm motivated to do, and what I feel needs doing. If you have any suggestions, notice any missing features in Sucralose, or find any pesky bugs, please reach out to my Telegram or Discord (Metalloriff on both). Knowing that someone is waiting for features heavily motivates me to work on whichever project you're waiting for. This does go for my other projects as well.
+					However, I have many projects. I work on them in a priority list of what I'm motivated to do, and what I feel needs doing. If you have any suggestions, notice any missing features in Sucralose, or find any pesky bugs, please reach out to my Telegram or Discord (RIVÆROS on both). Knowing that someone is waiting for features heavily motivates me to work on whichever project you're waiting for. This does go for my other projects as well.
 				</p>
 
 				<p>
@@ -230,7 +230,7 @@ export const newsPosts = [{
 				<h2>This is a WIP website!</h2>
 
 				<p>
-					I have many projects, and work on them in a priority list of what I'm motivated to do, and what I feel needs doing. If you have any suggestions, notice any missing features in Sucralose, or find any pesky bugs, please reach out to my Telegram or Discord (Metalloriff on both). Knowing that someone is waiting for features heavily motivates me to work on whichever project you're waiting for. This does go for my other projects as well.
+					I have many projects, and work on them in a priority list of what I'm motivated to do, and what I feel needs doing. If you have any suggestions, notice any missing features in Sucralose, or find any pesky bugs, please reach out to my Telegram or Discord (RIVÆROS on both). Knowing that someone is waiting for features heavily motivates me to work on whichever project you're waiting for. This does go for my other projects as well.
 				</p>
 
 				<p>
@@ -301,7 +301,7 @@ export const newsPosts = [{
 				<h2>This is a WIP website!</h2>
 
 				<p>
-					I have many projects, and work on them in a priority list of what I'm motivated to do, and what I feel needs doing. If you have any suggestions, notice any missing features in Sucralose, or find any pesky bugs, please reach out to my Telegram or Discord (Metalloriff on both). Knowing that someone is waiting for features heavily motivates me to work on whichever project you're waiting for. This does go for my other projects as well.
+					I have many projects, and work on them in a priority list of what I'm motivated to do, and what I feel needs doing. If you have any suggestions, notice any missing features in Sucralose, or find any pesky bugs, please reach out to my Telegram or Discord (RIVÆROS on both). Knowing that someone is waiting for features heavily motivates me to work on whichever project you're waiting for. This does go for my other projects as well.
 				</p>
 
 				<p>
@@ -352,6 +352,87 @@ export const newsPosts = [{
 			</>
 		);
 	}
+}, {
+	date: "02/05/2024",
+	title: "Slight Redesign, Bug Fixes & Improvements",
+	body: function () {
+		return (
+			<>
+				<h2>What's new?</h2>
+
+				<p>
+					<b>New rounded design</b> -- The site has been given a facelift with a new rounded design, and the default theme has been changed to Frappe.
+				</p>
+
+				<p>
+					<b>Performance settings</b> -- There's a new "performance" section in the settings, along with a low quality post previews setting, an option to disable animations, and an option to disable blur effects.
+				</p>
+
+				<h2>Patches</h2>
+
+				<p>
+					Fixed a bug preventing you from opening pools on mobile, or via left click.
+				</p>
+
+				<p>
+					Fixed pools showing the wrong name. Apparently that was who created the pool, not the artist.
+				</p>
+			</>
+		);
+	}
+}, {
+	date: "11/04/2026",
+	title: "Sources, Seekers, and Long Overdue Bug Fixes",
+	body: function () {
+		return (
+			<>
+				<h2>What's new?</h2>
+
+				<p>
+					<b>Multiple sources</b> -- You can now browse e6ai.net! There's a new source dropdown next to the blacklist and order dropdowns, letting you switch between e621 and e6ai on the fly.
+					Their API is nearly identical to e621's, so everything works out of the box. Artists are called "directors" over there for whatever reason, but Sucralose handles that quietly behind the scenes.
+					Heads up though, the two sites don't share accounts, so if you want to vote, favorite, or generally be logged in on e6ai, you'll need to add your e6ai username and API key in the settings.
+					There's a separate section for it, right below your e621 one.
+				</p>
+
+				<p>
+					<b>RSS feeds</b> -- There's a new RSS button in the search bar. Clicking it copies an Atom feed URL for whatever you're searching, including your login and API key, so the feed shows exactly what you see on Sucralose, blacklist and all.
+					If you aren't signed in, it copies an anonymous feed instead.
+				</p>
+
+				<p>
+					<b>Seek controls</b> -- While a video is open in the post modal, Q and E now seek 5 seconds backwards and forwards, respectively.
+				</p>
+
+				<p>
+					<b>Smarter tag autocomplete</b> -- The tag autocomplete used to only make suggestions for the last tag in your search, no matter where your cursor was.
+					It now follows your cursor, so you can arrow-key back to the middle of a long query, start editing, and get suggestions for the tag you're actually touching.
+					Clicking a suggestion replaces just that tag, and drops your cursor right after it, where you'd expect it.
+				</p>
+
+				<p>
+					<b>Good riddance</b> -- I finally took the 5 seconds to remove that Dark Reader notice.
+				</p>
+
+				<h2>Patched bugs</h2>
+
+				<p>
+					MP4 videos now play in the post modal. Previously, any video that wasn't a webm tried to load as an image, which, spoiler, does not work, and greeted you with "image failed to load."
+					Opening it in a new tab worked fine, which made this extra confusing. Videos now also dismiss the loading spinner properly -- there was a leftover bit of image-specific code that could leave the spinner spinning forever, even after the video was playing.
+				</p>
+
+				<p>
+					Downloads no longer explode with a cryptic "Toasts.showToast is not a function" error.
+				</p>
+
+				<h2>What's next?</h2>
+
+				<p>
+					Saved searches are still on the way. Reach out to me on Telegram or Discord (rivaeros on both) if you want something prioritized or have any suggestions.
+				</p>
+			</>
+		);
+	}
 }];
 
 const basePatchNote = {
@@ -363,7 +444,7 @@ const basePatchNote = {
 				<h2>This is a WIP website!</h2>
 
 				<p>
-					I have many projects, and work on them in a priority list of what I'm motivated to do, and what I feel needs doing. If you have any suggestions, notice any missing features in Sucralose, or find any pesky bugs, please reach out to my Telegram or Discord (Metalloriff on both). Knowing that someone is waiting for features heavily motivates me to work on whichever project you're waiting for. This does go for my other projects as well.
+					I have many projects, and work on them in a priority list of what I'm motivated to do, and what I feel needs doing. If you have any suggestions, notice any missing features in Sucralose, or find any pesky bugs, please reach out to my Telegram or Discord (RIVÆROS on both). Knowing that someone is waiting for features heavily motivates me to work on whichever project you're waiting for. This does go for my other projects as well.
 				</p>
 
 				<p>

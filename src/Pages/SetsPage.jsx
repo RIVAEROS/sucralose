@@ -169,14 +169,14 @@ export function SetsPage() {
 			<Header searchPlaceholder="Search sets..." />
 
 			<TabsList tabs={["All", "Owned", "Favorites"]}>
-				<SetsList />
+				<SetsList tab="All" />
 
 				<SetsList options={{
 					"search[creator_name]": UserStore.getLocalUser()?.username
-				}} />
+				}} tab="Owned" />
 
 				{user ? (
-					<div className="Sets">
+					<div className="Sets" tab="Favorites">
 						<div className="Items">
 							{(favoriteSets ?? []).map(set => (
 								<LinkWrapper key={set.id} href={`/posts?search=set:${set.shortname}`}>
@@ -198,7 +198,7 @@ export function SetsPage() {
 						</div>
 					</div>
 				) : (
-					<div className="NoSets">
+					<div className="NoSets" tab="Favorites">
 						<div className="Placeholder">
 							<h2>Not signed in</h2>
 

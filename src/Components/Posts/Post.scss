@@ -16,18 +16,24 @@
 	border-radius: var(--secondary-border-radius);
 	overflow: hidden;
 
+	border: 2px solid transparent;
+	transition: border-color $ft;
+
+	&.Hovered {
+		border-color: $primaryColor;
+	}
+
 	.PostHeader {
 		position: absolute;
+		top: $secondaryBorderRadius;
 		left: 0;
 		right: 0;
 		z-index: 1;
 
-		background-color: rgba(black, 0.5);
-		backdrop-filter: blur(5px);
-
 		display: flex;
+		align-items: center;
 		flex-wrap: wrap;
-		padding: 7px;
+		padding: $secondaryBorderRadius;
 
 		.Divider {
 			border-right: 2px solid var(--txt-color);
@@ -36,10 +42,18 @@
 
 		.TagItem {
 			margin-right: 7px;
+			background: rgba(black, 0.5);
+			padding: 8px 10px;
+			border-radius: $secondaryBorderRadius;
 
 			&:not(:last-child)::after {
 				content: ",";
 				color: var(--txt-color);
+			}
+
+			&.Unknown {
+				color: rgba(white, 0.5);
+				cursor: not-allowed;
 			}
 		}
 	}
@@ -55,12 +69,6 @@
 
 		object-fit: cover;
 		cursor: pointer;
-
-		transition: transform $ft;
-
-		&:hover {
-			transform: scale(1.025);
-		}
 
 		&.Loading {
 			align-items: center;
@@ -98,10 +106,10 @@
 
 		width: max-content;
 		height: 30px;
-		padding: 5.5px 7px;
+		padding: 5px 12px;
 
-		background-color: rgba(black, 0.5);
-		backdrop-filter: blur(5px);
+		background-color: rgba(black, 0.75);
+		border-radius: $secondaryBorderRadius;
 
 		display: flex;
 		align-items: center;
@@ -117,21 +125,24 @@
 
 	.PostFooter {
 		position: absolute;
-		left: 0;
-		bottom: 0;
-		right: 0;
+		left: $secondaryBorderRadius;
+		bottom: $secondaryBorderRadius;
+		right: $secondaryBorderRadius;
 		height: 50px;
 
-		background-color: rgba(black, 0.5);
-		backdrop-filter: blur(5px);
+		.Sec {
+			border-radius: $secondaryBorderRadius;
+			
+			background-color: rgba(black, 0.5);
+			backdrop-filter: blur(5px);
+			padding: $secondaryBorderRadius;
+		}
 
 		display: flex;
 		align-items: center;
 
-		padding-left: 7px;
-
 		.Button {
-			padding: 7px;
+			padding: 5px;
 			gap: 5px;
 
 			display: flex;
@@ -143,6 +154,10 @@
 			svg {
 				width: 20px;
 				height: 20px;
+			}
+
+			span {
+				margin-top: 2px;
 			}
 
 			transition: color $ft;
@@ -169,16 +184,18 @@
 		.VotesTally {
 			flex-grow: 1;
 
-			height: 3px;
+			height: 4px;
 			background-color: var(--red);
+			border-radius: 99px;
 
-			margin-bottom: -2px;
+			margin-bottom: -1px;
 
 			.UpVotes {
-				height: 3px;
+				height: 4px;
 				background-color: var(--green);
+				border-radius: 99px;
  
-				margin-top: -2px;
+				margin-top: -1px;
 			}
 		}
 	}
